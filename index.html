@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Simulator</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #121212; color: white; text-align: center; padding-top: 50px; }
+        .container { max-width: 400px; margin: 0 auto; background: #1e1e1e; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        input { width: 90%; padding: 10px; margin: 10px 0; border: none; border-radius: 4px; font-size: 16px; text-align: center; }
+        button { background: #007ACC; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 4px; cursor: pointer; width: 95%; }
+        button:hover { background: #005999; }
+        #result { margin-top: 20px; font-size: 16px; font-weight: bold; white-space: pre-line; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🔐 Password Simulator</h2>
+    <p>Enter a code to test the backend cracker:</p>
+    <input type="password" id="passwordInput" placeholder="Enter password here">
+    <button onclick="sendPassword()">Crack Password</button>
+    <div id="result"></div>
+</div>
+
+<script>
+function sendPassword() {
+    let password = document.getElementById("passwordInput").value;
+    let resultDiv = document.getElementById("result");
+
+    if (!password) {
+        resultDiv.innerHTML = "<span style='color: #ff4d4d;'>Please enter a password!</span>";
+        return;
+    }
+
+    resultDiv.innerHTML = "<span style='color: #ffcc00;'>Cracking... please wait...</span>";
+
+    // Send the data to your Python Flask backend
+    fetch('/crack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password })
+    })
+    .then(response => response.json())
+    .then(data => {
+        resultDiv.innerHTML = `
+            <span style='color: #00ff00;'>Target Cracked!</span><br><br>
+            Found: ${data.guessed_password}<br>
+            Attempts: ${data.attempts}<br>
+            Time taken: ${data.time_taken}s
+        `;
+    })
+    .catch(error => {
+        resultDiv.innerHTML = "<span style='color: #ff4d4d;'>Error connecting to backend.</span>";
+    });
+}
+</script>
+
+</body>
+</html>
