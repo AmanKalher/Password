@@ -2,28 +2,34 @@ from flask import Flask, render_template, request, jsonify
 import os
 import time
 import random
+import itertools
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 template_dir = os.path.join(base_dir, 'templates')
 
 app = Flask(__name__, template_folder=template_dir)
 
+
 def your_cracking_function(target_password):
     start_time = time.perf_counter()
     chars = "1234567890"
-    guess = ""
     attempts = 0
-
-    # Brute force simulation
-    while guess != target_password:
+    length = len(target_password)
+    
+    # Generate sequential combinations of the exact length needed
+    for guess_tuple in itertools.product(chars, repeat=length):
         attempts += 1
-        guess = "".join(random.choice(chars) for _ in range(len(target_password)))
-        # Note: We removed time.sleep(0.01) so the server doesn't time out
-    
+        guess = "".join(guess_tuple)
+        
+        if guess == target_password:
+            end_time = time.perf_counter()
+            duration = round(end_time - start_time, 4)
+            return guess, attempts, duration
+            
+    # Fallback return if somehow not found
     end_time = time.perf_counter()
-    duration = round(end_time - start_time, 4)
-    
-    return guess, attempts, duration
+    return "", attempts, round(end_time - start_time, 4)
+
 
 @app.route('/')
 def home():
